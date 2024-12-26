@@ -25,4 +25,5 @@ target_include_directories(gym_src
 
 target_link_libraries(gym_src
   ${raylib_LIBRARIES}
+  m
   )
