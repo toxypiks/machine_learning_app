@@ -39,7 +39,7 @@ typedef struct {
 
 Mat mat_alloc(size_t rows, size_t cols);
 void mat_save(FILE *out, Mat m);
-void mat_load(FILE *in, Mat m);
+Mat mat_load(FILE *in);
 void mat_fill(Mat m, float x);
 void mat_rand(Mat m, float low, float high);
 Mat mat_row(Mat m, size_t row);
@@ -93,6 +93,7 @@ Mat mat_alloc(size_t rows, size_t cols)
   return m;
 }
 
+//saves matrix in an output file
 void mat_save(FILE *out, Mat m)
 {
   const char *magic = "nn.h.mat";
@@ -109,10 +110,24 @@ void mat_save(FILE *out, Mat m)
   }
 }
 
-void mat_load(FILE *in, Mat m)
+//loads matrix from an input file
+Mat mat_load(FILE *in)
 {
-  (void) in;
-  (void) m;
+  uint64_t magic;
+  fread(&magic, sizeof(magic), 1, in);
+  //hex-representation of string magic
+  NN_ASSERT(magic == 0x6e6e2e682e6d6174);
+  size_t rows, cols;
+  fread(&rows, sizeof(rows), 1, in);
+  fread(&cols, sizeof(cols), 1, in);
+  Mat m = mat_malloc(rows, cols);
+
+  size_t n = fread(m.es, sizeof(*m.es), rows*cols, in);
+  while (n < rows*cols && !ferror(in)) {
+    size_t k = fread(m.es, sizeof(*m.es) + n, rows*cols - n, in);
+    n += k;
+  }
+  return m;
 }
 
 void mat_dot(Mat dst, Mat a, Mat b)
