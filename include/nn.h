@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #ifndef NN_MALLOC
 #include <stdlib.h>
@@ -99,10 +100,12 @@ void mat_save(FILE *out, Mat m)
   fwrite(magic, strlen(magic), 1, out);
   fwrite(&m.rows, sizeof(m.rows), 1, out);
   fwrite(&m.cols, sizeof(m.cols), 1, out);
-  size_t n = fwrite(&m.es, sizeof(*m.es), m.rows*m.cols, out);
-  while (n < m.rows*m.cols && !ferror(out)) {
-    size_t m = fwrite(m.es + n, sizeof(*m.es), m.rows*m.cols - n, out);
-    n += m;
+  for (size_t i = 0; i < m.rows; ++i) {
+    size_t n = fwrite(&MAT_AT(m, i, 0), sizeof(*m.es), m.cols, out);
+    while (n < m.cols && !ferror(out)) {
+      size_t k = fwrite(m.es + n, sizeof(*m.es), m.cols - n, out);
+      n += k;
+    }
   }
 }
 

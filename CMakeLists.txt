@@ -27,3 +27,18 @@ target_link_libraries(gym_src
   ${raylib_LIBRARIES}
   m
   )
+
+set(ADDER_GEN_SRC
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/adder_gen.c
+  )
+
+add_executable(adder_gen)
+target_sources(adder_gen
+ PRIVATE
+  ${ADDER_GEN_SRC}
+  )
+
+target_link_libraries(adder_gen
+  ${raylib_LIBRARIES}
+  m
+  )
