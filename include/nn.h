@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <stdint.h>
 
 #ifndef NN_MALLOC
 #include <stdlib.h>
@@ -120,7 +121,7 @@ Mat mat_load(FILE *in)
   size_t rows, cols;
   fread(&rows, sizeof(rows), 1, in);
   fread(&cols, sizeof(cols), 1, in);
-  Mat m = mat_malloc(rows, cols);
+  Mat m = mat_alloc(rows, cols);
 
   size_t n = fread(m.es, sizeof(*m.es), rows*cols, in);
   while (n < rows*cols && !ferror(in)) {
