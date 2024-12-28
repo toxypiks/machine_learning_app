@@ -117,7 +117,7 @@ Mat mat_load(FILE *in)
   uint64_t magic;
   fread(&magic, sizeof(magic), 1, in);
   //hex-representation of string magic
-  NN_ASSERT(magic == 0x6e6e2e682e6d6174);
+  NN_ASSERT(magic == 0x74616d2e682e6e6e);
   size_t rows, cols;
   fread(&rows, sizeof(rows), 1, in);
   fread(&cols, sizeof(cols), 1, in);
