@@ -90,7 +90,27 @@ int main (int argc, char **argv)
   Mat t = mat_load(in);
   fclose(in);
 
-  MAT_PRINT(t);
+  NN_ASSERT(arch.count > 1);
+  size_t ins_sz = arch.items[0];
+  size_t outs_sz = arch.items[arch.count-1];
+  NN_ASSERT(t.cols == ins_sz + outs_sz);
+
+  Mat ti = {
+    .rows = t.rows,
+    .cols = ins_sz,
+    .stride = t.stride,
+    .es = &MAT_AT(t, 0, 0),
+  };
+
+  Mat to = {
+    .rows = t.rows,
+    .cols = outs_sz,
+    .stride = t.stride,
+    .es = &MAT_AT(t, 0, ins_sz),
+  };
+
+  MAT_PRINT(ti);
+  MAT_PRINT(to);
 
   /*InitWindow(IMG_WIDTH, IMG_HEIGHT, "gym");
   SetTargetFPS(60);
