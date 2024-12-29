@@ -73,8 +73,12 @@ void nn_render_raylib(NN nn)
         for (size_t j = 0; j < nn.as[l+1].cols; ++j) {
           int cx2 = nn_x + (l+1)*layer_hpad + layer_hpad/2;
           int cy2 = nn_y + j*layer_vpad2 + layer_vpad2/2;
-          high_color.a = floorf(255.f*sigmoidf(MAT_AT(nn.ws[l], j, i)));
-          DrawLine(cx1, cy1, cx2, cy2, ColorAlphaBlend(low_color, high_color, WHITE));
+          float value = sigmoidf(MAT_AT(nn.ws[l], j, i));
+          high_color.a = floorf(255.f*value);
+          float thick = 1.0f;
+          Vector2 start = {cx1, cy1};
+          Vector2 end = {cx2, cy2};
+          DrawLineEx(start, end, thick, ColorAlphaBlend(low_color, high_color, WHITE));
         }
       }
       if (l > 0) {
@@ -108,7 +112,7 @@ int main (int argc, char **argv)
   const char *data_file_path = args_shift(&argc, &argv);
 
   unsigned int buffer_len = 0;
-  unsigned char *buffer = LoadFileData("../data/adder.arch", &buffer_len);
+  unsigned char *buffer = LoadFileData(arch_file_path, &buffer_len);
   if (buffer == NULL) {
     return 1;
   }
@@ -171,7 +175,7 @@ int main (int argc, char **argv)
       nn_backprop(nn, g, ti, to);
       nn_learn(nn, g, rate);
       i += 1;
-      printf("c = %f\n", nn_cost(nn, ti, to));
+      printf("%zu: c = %f\n", i, nn_cost(nn, ti, to));
     }
     BeginDrawing();
     nn_render_raylib(nn);
