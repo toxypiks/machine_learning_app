@@ -12,6 +12,17 @@ int main (void)
       MAT_AT(t, row, 2) = i^j;
     }
   }
-  MAT_PRINT(t);
+
+  const char *out_file_path = "../output_files/xor.mat";
+  FILE *out = fopen(out_file_path, "wb");
+  if (out == NULL) {
+    fprintf(stderr, "ERROR: could not open file %s\n", out_file_path);
+    return 1;
+  }
+  mat_save(out, t);
+  fclose(out);
+
+  printf("Generated %s\n", out_file_path);
+
   return 0;
 }
