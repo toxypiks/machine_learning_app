@@ -42,3 +42,18 @@ target_link_libraries(adder_gen
   ${raylib_LIBRARIES}
   m
   )
+
+set(XOR_GEN_SRC
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/xor_gen.c
+  )
+
+add_executable(xor_gen)
+target_sources(xor_gen
+ PRIVATE
+  ${XOR_GEN_SRC}
+  )
+
+target_link_libraries(xor_gen
+  ${raylib_LIBRARIES}
+  m
+  )
