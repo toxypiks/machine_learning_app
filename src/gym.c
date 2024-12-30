@@ -46,7 +46,7 @@ char *args_shift(int *argc, char ***argv)
   return result;
 }
 
-void nn_render_raylib(NN nn, float w, int h)
+void nn_render_raylib(NN nn, int rx, int ry, int rw, int rh)
 {
   Color background_color = {0x18, 0x18, 0x18, 0xFF};
   Color low_color = {0xFF, 0x00, 0xFF, 0xFF};
@@ -54,13 +54,13 @@ void nn_render_raylib(NN nn, float w, int h)
 
   ClearBackground(background_color);
 
-  float neuron_radius = h*0.04f;
+  float neuron_radius = rh*0.04f;
   int layer_border_vpad = 50;
   int layer_border_hpad = 50;
-  int nn_width = w - 2*layer_border_hpad;
-  int nn_height = h - 2*layer_border_vpad;
-  int nn_x = w/2 - nn_width/2;
-  int nn_y = h/2 - nn_height/2;
+  int nn_width = rw - 2*layer_border_hpad;
+  int nn_height = rh - 2*layer_border_vpad;
+  int nn_x = rx + rw/2 - nn_width/2;
+  int nn_y = ry + rh/2 - nn_height/2;
   size_t arch_count = nn.count + 1;
   int layer_hpad = nn_width / arch_count;
   for (size_t l = 0; l < arch_count; ++l) {
@@ -75,7 +75,7 @@ void nn_render_raylib(NN nn, float w, int h)
           int cy2 = nn_y + j*layer_vpad2 + layer_vpad2/2;
           float value = sigmoidf(MAT_AT(nn.ws[l], j, i));
           high_color.a = floorf(255.f*value);
-          float thick = h*0.004f;
+          float thick = rh*0.004f;
           Vector2 start = {cx1, cy1};
           Vector2 end = {cx2, cy2};
           DrawLineEx(start, end, thick, ColorAlphaBlend(low_color, high_color, WHITE));
@@ -178,7 +178,11 @@ int main (int argc, char **argv)
       printf("%zu: c = %f\n", i, nn_cost(nn, ti, to));
     }
     BeginDrawing();
-    nn_render_raylib(nn, IMG_WIDTH/2, IMG_HEIGHT/2);
+    int rw = IMG_WIDTH/2;
+    int rh = IMG_HEIGHT/2;
+    int rx = IMG_WIDTH/2 - rw/2;
+    int ry = IMG_HEIGHT/2 - rh/2;
+    nn_render_raylib(nn, rx, ry, rw, rh);
     EndDrawing();
   }
   return 0;
