@@ -59,5 +59,14 @@ int main (int argc, char **argv)
   }
   MAT_PRINT(t);
 
+  const char *out_file_path = "../output_files/img.mat";
+  FILE *out = fopen(out_file_path, "wb");
+  if (out == NULL) {
+    fprintf(stderr, "ERROR: could not open file %s\n", out_file_path);
+    return 1;
+  }
+  mat_save(out, t);
+
+  printf("Generated &s from %s\n", out_file_path, img_file_path);
   return 0;
 }
