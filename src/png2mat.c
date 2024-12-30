@@ -39,5 +39,21 @@ int main (int argc, char **argv)
 
   printf("%s size %dx%d %d bits\n", img_file_path, img_width, img_height, img_comp*8);
 
+  //always: rows = amount of data, columns = input + output
+  //in this case input: 3 since values for x, y, brightness
+  Mat t = mat_alloc(img_width*img_height, 3);
+
+  //iterate through each pixel from img
+  for (size_t y = 0; y < img_height; ++y) {
+    for (size_t x = 0; x < img_width; ++x) {
+      //normalize x-value by dividing by img_width but x can never reach img_width because
+      //of loop-condition x < img_width, thats why x/(img_width -1)
+      float nx = (float)x/(img_width - 1);
+      //same for y
+      float ny = (float)y/(img_height -1);
+      printf("%3u ", img_pixels[y*img_width + x]);
+    }
+    printf("\n");
+  }
   return 0;
 }
