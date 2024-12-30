@@ -200,7 +200,7 @@ int main (int argc, char **argv)
   NN g = nn_alloc(arch.items, arch.count);
   nn_rand(nn, 0, 1);
   NN_PRINT(nn);
-  float rate = 1;
+  float rate = 0.5;
 
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(IMG_WIDTH, IMG_HEIGHT, "gym");
@@ -208,31 +208,40 @@ int main (int argc, char **argv)
 
   Cost_Plot plot = {0};
 
-  size_t i = 0;
+  size_t epoch = 0;
+  size_t max_epoch = 5000;
   while(!WindowShouldClose()) {
-    if (i < 5000) {
-      nn_backprop(nn, g, ti, to);
-      nn_learn(nn, g, rate);
-      i += 1;
-      da_append(&plot, nn_cost(nn, ti, to));
+    for (size_t i = 0; i < 10 && epoch < max_epoch; ++i) {
+      if (epoch < max_epoch) {
+        nn_backprop(nn, g, ti, to);
+        nn_learn(nn, g, rate);
+        epoch += 1;
+        da_append(&plot, nn_cost(nn, ti, to));
+      }
     }
     BeginDrawing();
     Color background_color = {0x18, 0x18, 0x18, 0xFF};
     ClearBackground(background_color);
     {
       int rw, rh, rx, ry;
+      int w = GetRenderWidth();
+      int h = GetRenderHeight();
 
-      rw = GetRenderWidth()/2;
-      rh = GetRenderHeight()*2/3;
+      rw = w/2;
+      rh = h*2/3;
       rx = 0;
-      ry = GetRenderHeight()/2 - rh/2;
+      ry = h/2 - rh/2;
       plot_cost(plot, rx, ry, rw, rh);
 
-      rw = GetRenderWidth()/2;
-      rh = GetRenderHeight()*2/3;
-      rx = GetRenderWidth() - rw;
-      ry = GetRenderHeight()/2 - rh/2;
+      rw = w/2;
+      rh = h*2/3;
+      rx = w - rw;
+      ry = h/2 - rh/2;
       nn_render_raylib(nn, rx, ry, rw, rh);
+
+      char buffer[256];
+      snprintf(buffer, sizeof(buffer),"Epoch: %zu/%zu, Rate: %f", epoch, max_epoch, rate);
+      DrawText(buffer, 0, 0, h*0.04, WHITE);
     }
     EndDrawing();
   }
