@@ -57,7 +57,26 @@ int main (int argc, char **argv)
       MAT_AT(t, i, 2) = img_pixels[i]/255.f;
     }
   }
-  MAT_PRINT(t);
+
+  Mat ti = {
+    .rows = t.rows,
+    //we defined two inputs
+    .cols = 2,
+    .stride = t.stride,
+    .es = &MAT_AT(t, 0, 0),
+  };
+
+  Mat to = {
+    .rows = t.rows,
+    .cols = 1,
+    .stride = t.stride,
+    .es = &MAT_AT(t, 0, ti.cols),
+  };
+
+  MAT_PRINT(ti);
+  MAT_PRINT(to);
+
+  return 0;
 
   const char *out_file_path = "../output_files/img.mat";
   FILE *out = fopen(out_file_path, "wb");
@@ -66,6 +85,12 @@ int main (int argc, char **argv)
     return 1;
   }
   mat_save(out, t);
+
+  size_t arch[] ={2, 28, 1};
+  NN nn = nn_alloc(arch, ARRAY_LEN(arch));
+  NN g = nn_alloc(arch, ARRAY_LEN(arch));
+
+  nn_backprop(nn, g, ti, to);
 
   printf("Generated &s from %s\n", out_file_path, img_file_path);
   return 0;
