@@ -46,14 +46,18 @@ int main (int argc, char **argv)
   //iterate through each pixel from img
   for (size_t y = 0; y < img_height; ++y) {
     for (size_t x = 0; x < img_width; ++x) {
+      size_t i = y*img_width + x;
+
       //normalize x-value by dividing by img_width but x can never reach img_width because
       //of loop-condition x < img_width, thats why x/(img_width -1)
-      float nx = (float)x/(img_width - 1);
+      MAT_AT(t, i, 0) = (float)x/(img_width - 1);
       //same for y
-      float ny = (float)y/(img_height -1);
-      printf("%3u ", img_pixels[y*img_width + x]);
+      MAT_AT(t, i, 1) = (float)y/(img_height -1);
+      //normalize brightness by dividing each pixel value by 255
+      MAT_AT(t, i, 2) = img_pixels[i]/255.f;
     }
-    printf("\n");
   }
+  MAT_PRINT(t);
+
   return 0;
 }
