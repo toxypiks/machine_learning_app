@@ -57,3 +57,18 @@ target_link_libraries(xor_gen
   ${raylib_LIBRARIES}
   m
   )
+
+set(PNG2MAT_SRC
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/png2mat.c
+  )
+
+add_executable(png2mat)
+target_sources(png2mat
+ PRIVATE
+  ${PNG2MAT_SRC}
+  )
+
+target_link_libraries(png2mat
+  ${raylib_LIBRARIES}
+  m
+  )
