@@ -202,8 +202,8 @@ int main (int argc, char **argv)
   NN_PRINT(nn);
   float rate = 1;
 
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(IMG_WIDTH, IMG_HEIGHT, "gym");
-  SetWindowState(FLAG_WINDOW_RESIZABLE);
   SetTargetFPS(60);
 
   Cost_Plot plot = {0};
@@ -222,16 +222,16 @@ int main (int argc, char **argv)
     {
       int rw, rh, rx, ry;
 
-      rw = IMG_WIDTH/2;
-      rh = IMG_HEIGHT*2/3;
+      rw = GetRenderWidth()/2;
+      rh = GetRenderHeight()*2/3;
       rx = 0;
-      ry = IMG_HEIGHT/2 - rh/2;
+      ry = GetRenderHeight()/2 - rh/2;
       plot_cost(plot, rx, ry, rw, rh);
 
-      rw = IMG_WIDTH/2;
-      rh = IMG_HEIGHT*2/3;
-      rx = IMG_WIDTH - rw;
-      ry = IMG_HEIGHT/2 - rh/2;
+      rw = GetRenderWidth()/2;
+      rh = GetRenderHeight()*2/3;
+      rx = GetRenderWidth() - rw;
+      ry = GetRenderHeight()/2 - rh/2;
       nn_render_raylib(nn, rx, ry, rw, rh);
     }
     EndDrawing();
