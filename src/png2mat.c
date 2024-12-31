@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "stb_image.h"
+#include "stb_image_write.h"
 #define NN_IMPLEMENTATION
 #include "nn.h"
 #include <raylib.h>
@@ -180,7 +181,7 @@ int main (int argc, char **argv)
   //MAT_PRINT(ti);
   //MAT_PRINT(to);
 
-  size_t arch[] ={2, 28/4, 1};
+  size_t arch[] ={2, 7, 4, 1};
   NN nn = nn_alloc(arch, ARRAY_LEN(arch));
   NN g = nn_alloc(arch, ARRAY_LEN(arch));
   nn_rand(nn, -1, 1);
@@ -263,9 +264,33 @@ int main (int argc, char **argv)
     printf("\n");
     }
 
+  //save neural network output as img
+  size_t out_width = 512;
+  size_t out_height = 512;
+  uint8_t *out_pixels = malloc(sizeof(*out_pixels)*out_width*out_height);
+  assert(out_pixels != NULL);
+
+  for (size_t y = 0; y < out_height; ++y) {
+    for (size_t x = 0; x < out_width; ++x) {
+      MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img_width -1);
+      MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img_height -1);
+      nn_forward(nn);
+      uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.0f;
+      out_pixels[y*out_width + x] = pixel;
+    }
+  }
+
+  const char *out_file_path = "../output_files/upscaled.png";
+  if (!stbi_write_png(out_file_path, out_width, out_height, 1, out_pixels, out_width*sizeof(*out_pixels))) {
+    fprintf(stderr, "ERROR: could not save image %s\n", out_file_path);
+    return 1;
+  }
+
+  printf("Generated %s from %s", out_file_path, img_file_path);
+
   return 0;
 
-  const char *out_file_path = "../output_files/img.mat";
+  /*const char *out_file_path = "../output_files/img.mat";
   FILE *out = fopen(out_file_path, "wb");
   if (out == NULL) {
     fprintf(stderr, "ERROR: could not open file %s\n", out_file_path);
@@ -274,5 +299,5 @@ int main (int argc, char **argv)
   mat_save(out, t);
 
   printf("Generated &s from %s\n", out_file_path, img_file_path);
-  return 0;
+  return 0;*/
 }
