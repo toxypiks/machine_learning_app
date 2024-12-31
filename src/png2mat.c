@@ -192,6 +192,9 @@ int main (int argc, char **argv)
 
   Cost_Plot plot = {0};
 
+  Image preview_image = GenImageColor(img_width, img_height, BLACK);
+  Texture2D preview_texture = LoadTextureFromImage(preview_image);
+
   size_t epoch = 0;
   size_t max_epoch = 100*1000;
   size_t epochs_per_frame = 103;
@@ -223,17 +226,29 @@ int main (int argc, char **argv)
       int w = GetRenderWidth();
       int h = GetRenderHeight();
 
-      rw = w/2;
+      rw = w/3;
       rh = h*2/3;
       rx = 0;
       ry = h/2 - rh/2;
-      plot_cost(plot, rx, ry, rw, rh);
 
-      rw = w/2;
-      rh = h*2/3;
-      rx = w - rw;
-      ry = h/2 - rh/2;
+      plot_cost(plot, rx, ry, rw, rh);
+      rx += rw;
       nn_render_raylib(nn, rx, ry, rw, rh);
+
+      rx += rw;
+      for (size_t y = 0; y < (size_t)img_height; ++y) {
+        for (size_t x = 0; x < (size_t)img_width; ++x) {
+          size_t i = y*img_width + x;
+          MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img_width -1);
+          MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img_height -1);
+          nn_forward(nn);
+          uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.0f;
+          ImageDrawPixel(&preview_image, x, y, CLITERAL(Color){pixel, pixel, pixel, 255});
+        }
+      }
+
+      UpdateTexture(preview_texture, preview_image.data);
+      DrawTextureEx(preview_texture, CLITERAL(Vector2) {rx, ry}, 0, 15, WHITE);
 
       char buffer[256];
       snprintf(buffer, sizeof(buffer),"Epoch: %zu/%zu, Rate: %f", epoch, max_epoch, rate);
@@ -259,10 +274,10 @@ int main (int argc, char **argv)
       MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img_height -1);
       nn_forward(nn);
       uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.0f;
-      if (pixel) printf("%3u ", pixel);
+      if (pixel) printf("%3u ", pixel); else printf("    ");
     }
     printf("\n");
-    }
+  }
 
   //save neural network output as img
   size_t out_width = 512;
