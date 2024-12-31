@@ -73,8 +73,46 @@ int main (int argc, char **argv)
     .es = &MAT_AT(t, 0, ti.cols),
   };
 
-  MAT_PRINT(ti);
-  MAT_PRINT(to);
+  //MAT_PRINT(ti);
+  //MAT_PRINT(to);
+
+  size_t arch[] ={2, 28, 1};
+  NN nn = nn_alloc(arch, ARRAY_LEN(arch));
+  NN g = nn_alloc(arch, ARRAY_LEN(arch));
+  nn_rand(nn, -1, 1);
+
+  float rate = 1.0f;
+  size_t max_epoch= 20000;
+
+  for (size_t i = 0; i < max_epoch; ++i) {
+    nn_backprop(nn, g, ti, to);
+    nn_learn(nn, g, rate);
+    if (i % 100 == 0) {
+      printf("%zu: cost: %f\n", i, nn_cost(nn, ti, to));
+    }
+  }
+
+  //render original image
+  for (size_t y = 0; y < (size_t)img_height; ++y) {
+    for (size_t x = 0; x < (size_t)img_width; ++x) {
+      uint8_t pixel = img_pixels[y*img_width + x];
+      if (pixel) printf("%3u ", pixel); else printf("    ");
+    }
+    printf("\n");
+  }
+
+  //render neural network output
+  for (size_t y = 0; y < (size_t)img_height; ++y) {
+    for (size_t x = 0; x < (size_t)img_width; ++x) {
+      size_t i = y*img_width + x;
+      MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img_width -1);
+      MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img_height -1);
+      nn_forward(nn);
+      uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.0f;
+      if (pixel) printf("%3u ", pixel);
+    }
+    printf("\n");
+    }
 
   return 0;
 
@@ -85,12 +123,6 @@ int main (int argc, char **argv)
     return 1;
   }
   mat_save(out, t);
-
-  size_t arch[] ={2, 28, 1};
-  NN nn = nn_alloc(arch, ARRAY_LEN(arch));
-  NN g = nn_alloc(arch, ARRAY_LEN(arch));
-
-  nn_backprop(nn, g, ti, to);
 
   printf("Generated &s from %s\n", out_file_path, img_file_path);
   return 0;
