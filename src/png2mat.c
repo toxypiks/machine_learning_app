@@ -272,8 +272,8 @@ int main (int argc, char **argv)
 
   for (size_t y = 0; y < out_height; ++y) {
     for (size_t x = 0; x < out_width; ++x) {
-      MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img_width -1);
-      MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img_height -1);
+      MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(out_width -1);
+      MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(out_height -1);
       nn_forward(nn);
       uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.0f;
       out_pixels[y*out_width + x] = pixel;
