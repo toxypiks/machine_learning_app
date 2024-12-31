@@ -180,7 +180,7 @@ int main (int argc, char **argv)
   //MAT_PRINT(ti);
   //MAT_PRINT(to);
 
-  size_t arch[] ={2, 28, 1};
+  size_t arch[] ={2, 28/4, 1};
   NN nn = nn_alloc(arch, ARRAY_LEN(arch));
   NN g = nn_alloc(arch, ARRAY_LEN(arch));
   nn_rand(nn, -1, 1);
@@ -192,11 +192,21 @@ int main (int argc, char **argv)
   Cost_Plot plot = {0};
 
   size_t epoch = 0;
-  size_t max_epoch = 5000;
+  size_t max_epoch = 100*1000;
+  size_t epochs_per_frame = 103;
   float rate = 1.0f;
+  bool paused = true;
 
   while(!WindowShouldClose()) {
-    for (size_t i = 0; i < 10 && epoch < max_epoch; ++i) {
+    if (IsKeyPressed(KEY_SPACE)) {
+      paused = !paused;
+    }
+    if (IsKeyPressed(KEY_R)) {
+      epoch = 0;
+      nn_rand(nn, -1, 1);
+      plot.count = 0;
+    }
+    for (size_t i = 0; i < 10 && epochs_per_frame && !paused && epoch < max_epoch; ++i) {
       if (epoch < max_epoch) {
         nn_backprop(nn, g, ti, to);
         nn_learn(nn, g, rate);
