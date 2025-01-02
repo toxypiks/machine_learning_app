@@ -62,9 +62,8 @@ int main(int argc, char **argv)
             MAT_AT(t, i, 2) = img_pixels[i]/255.f;
         }
     }
-    mat_shuffle_rows(t);
 
-    size_t arch[] = {2, 7, 7, 1};
+    size_t arch[] = {2, 10, 10, 1};
     NN nn = nn_alloc(arch, ARRAY_LEN(arch));
     NN g = nn_alloc(arch, ARRAY_LEN(arch));
     nn_rand(nn, -1, 1);
@@ -141,6 +140,7 @@ int main(int argc, char **argv)
                 da_append(&plot, average_cost/batch_count);
                 average_cost = 0.0f;
                 batch_begin = 0;
+                mat_shuffle_rows(t);
             }
         }
 
