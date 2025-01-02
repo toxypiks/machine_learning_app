@@ -25,41 +25,62 @@ int main(int argc, char **argv)
     const char *program = args_shift(&argc, &argv);
 
     if (argc <= 0) {
-        fprintf(stderr, "Usage: %s <input>\n", program);
-        fprintf(stderr, "ERROR: no input file is provided\n");
+        fprintf(stderr, "Usage: %s <image1> <image2>\n", program);
+        fprintf(stderr, "ERROR: no image1 file is provided\n");
         return 1;
     }
 
-    const char *img_file_path = args_shift(&argc, &argv);
+    const char *img1_file_path = args_shift(&argc, &argv);
 
-    int img_width, img_height, img_comp;
-    uint8_t *img_pixels = (uint8_t *)stbi_load(img_file_path, &img_width, &img_height, &img_comp, 0);
-    if (img_pixels == NULL) {
-        fprintf(stderr, "ERROR: could not read image %s\n", img_file_path);
-        return 1;
-    }
-    if (img_comp != 1) {
-        fprintf(stderr, "ERROR: %s is %d bits image. Only 8 bit grayscale images are supported\n", img_file_path, img_comp*8);
+    if (argc <= 0) {
+        fprintf(stderr, "Usage: %s <image1> <image2>\n", program);
+        fprintf(stderr, "ERROR: no image2 file is provided\n");
         return 1;
     }
 
-    printf("%s size %dx%d %d bits\n", img_file_path, img_width, img_height, img_comp*8);
+    const char *img2_file_path = args_shift(&argc, &argv);
 
+    int img1_width, img1_height, img1_comp;
+    uint8_t *img1_pixels = (uint8_t *)stbi_load(img1_file_path, &img1_width, &img1_height, &img1_comp, 0);
+    if (img1_pixels == NULL) {
+        fprintf(stderr, "ERROR: could not read image1 %s\n", img1_file_path);
+        return 1;
+    }
+    if (img1_comp != 1) {
+        fprintf(stderr, "ERROR: %s is %d bits image. Only 8 bit grayscale images are supported\n", img1_file_path, img1_comp*8);
+        return 1;
+    }
+
+    int img2_width, img2_height, img2_comp;
+    uint8_t *img2_pixels = (uint8_t *)stbi_load(img2_file_path, &img2_width, &img2_height, &img2_comp, 0);
+    if (img2_pixels == NULL) {
+        fprintf(stderr, "ERROR: could not read image2 %s\n", img2_file_path);
+        return 1;
+    }
+    if (img2_comp != 1) {
+        fprintf(stderr, "ERROR: %s is %d bits image. Only 8 bit grayscale images are supported\n", img2_file_path, img2_comp*8);
+        return 1;
+    }
+
+    printf("%s size %dx%d %d bits\n", img1_file_path, img1_width, img1_height, img1_comp*8);
+    printf("%s size %dx%d %d bits\n", img2_file_path, img2_width, img2_height, img2_comp*8);
+
+    return 0;
     //always: rows = amount of data, columns = input + output
     //in this case input: 3 since values for x, y, brightness
-    Mat t = mat_alloc(img_width*img_height, 3);
+    Mat t = mat_alloc(img1_width*img1_height, 3);
 
     //iterate through each pixel from img
-    for (int y = 0; y < img_height; ++y) {
-        for (int x = 0; x < img_width; ++x) {
-            size_t i = y*img_width + x;
+    for (int y = 0; y < img1_height; ++y) {
+        for (int x = 0; x < img1_width; ++x) {
+            size_t i = y*img1_width + x;
             //normalize x-value by dividing by img_width but x can never reach img_width because
             //of loop-condition x < img_width, thats why x/(img_width -1)
-            MAT_AT(t, i, 0) = (float)x/(img_width - 1);
+            MAT_AT(t, i, 0) = (float)x/(img1_width - 1);
             //same for y
-            MAT_AT(t, i, 1) = (float)y/(img_height - 1);
+            MAT_AT(t, i, 1) = (float)y/(img1_height - 1);
             //normalize brightness by dividing each pixel value by 255
-            MAT_AT(t, i, 2) = img_pixels[i]/255.f;
+            MAT_AT(t, i, 2) = img1_pixels[i]/255.f;
         }
     }
 
@@ -78,13 +99,13 @@ int main(int argc, char **argv)
 
     Plot plot = {0};
 
-    Image preview_image = GenImageColor(img_width, img_height, BLACK);
+    Image preview_image = GenImageColor(img1_width, img1_height, BLACK);
     Texture2D preview_texture = LoadTextureFromImage(preview_image);
 
-    Image original_image = GenImageColor(img_width, img_height, BLACK);
-    for (size_t y = 0; y < (size_t) img_height; ++y) {
-        for (size_t x = 0; x < (size_t) img_width; ++x) {
-            uint8_t pixel = img_pixels[y*img_width + x];
+    Image original_image = GenImageColor(img1_width, img1_height, BLACK);
+    for (size_t y = 0; y < (size_t) img1_height; ++y) {
+        for (size_t x = 0; x < (size_t) img1_width; ++x) {
+            uint8_t pixel = img1_pixels[y*img1_width + x];
             ImageDrawPixel(&original_image, x, y, CLITERAL(Color) { pixel, pixel, pixel, 255 });
         }
     }
@@ -163,10 +184,10 @@ int main(int argc, char **argv)
 
             float scale = 10;
 
-            for (size_t y = 0; y < (size_t) img_height; ++y) {
-                for (size_t x = 0; x < (size_t) img_width; ++x) {
-                    MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img_width - 1);
-                    MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img_height - 1);
+            for (size_t y = 0; y < (size_t) img1_height; ++y) {
+                for (size_t x = 0; x < (size_t) img1_width; ++x) {
+                    MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img1_width - 1);
+                    MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img1_height - 1);
                     nn_forward(nn);
                     uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.f;
                     ImageDrawPixel(&preview_image, x, y, CLITERAL(Color) { pixel, pixel, pixel, 255 });
@@ -175,7 +196,7 @@ int main(int argc, char **argv)
 
             UpdateTexture(preview_texture, preview_image.data);
             DrawTextureEx(preview_texture, CLITERAL(Vector2) { rx, ry }, 0, scale, WHITE);
-            DrawTextureEx(original_texture, CLITERAL(Vector2) { rx, ry + img_height*scale }, 0, scale, WHITE);
+            DrawTextureEx(original_texture, CLITERAL(Vector2) { rx, ry + img1_height*scale }, 0, scale, WHITE);
 
             char buffer[256];
             snprintf(buffer, sizeof(buffer), "Epoch: %zu/%zu, Rate: %f, Cost: %f", epoch, max_epoch, rate, plot.count > 0 ? plot.items[plot.count - 1] : 0);
@@ -185,19 +206,19 @@ int main(int argc, char **argv)
     }
 
     //render original image
-    for (size_t y = 0; y < (size_t) img_height; ++y) {
-        for (size_t x = 0; x < (size_t) img_width; ++x) {
-            uint8_t pixel = img_pixels[y*img_width + x];
+    for (size_t y = 0; y < (size_t) img1_height; ++y) {
+        for (size_t x = 0; x < (size_t) img1_width; ++x) {
+            uint8_t pixel = img1_pixels[y*img1_width + x];
             if (pixel) printf("%3u ", pixel); else printf("    ");
         }
         printf("\n");
     }
 
     //render neural network output
-    for (size_t y = 0; y < (size_t) img_height; ++y) {
-        for (size_t x = 0; x < (size_t) img_width; ++x) {
-            MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img_width - 1);
-            MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img_height - 1);
+    for (size_t y = 0; y < (size_t) img1_height; ++y) {
+        for (size_t x = 0; x < (size_t) img1_width; ++x) {
+            MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img1_width - 1);
+            MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img1_height - 1);
             nn_forward(nn);
             uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.f;
             if (pixel) printf("%3u ", pixel); else printf("    ");
@@ -227,7 +248,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    printf("Generated %s from %s\n", out_file_path, img_file_path);
+    printf("Generated %s from %s\n", out_file_path, img1_file_path);
 
     return 0;
 }
