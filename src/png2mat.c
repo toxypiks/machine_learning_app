@@ -97,10 +97,7 @@ int main(int argc, char **argv)
       }
     }
 
-    MAT_PRINT(t);
-    return 0;
-
-    size_t arch[] = {2, 10, 10, 1};
+    size_t arch[] = {3, 7, 7, 1};
     NN nn = nn_alloc(arch, ARRAY_LEN(arch));
     NN g = nn_alloc(arch, ARRAY_LEN(arch));
     nn_rand(nn, -1, 1);
@@ -155,7 +152,7 @@ int main(int argc, char **argv)
 
             Mat batch_ti = {
                 .rows = size,
-                .cols = 2,
+                .cols = 3,
                 .stride = t.stride,
                 .es = &MAT_AT(t, batch_begin, 0),
             };
@@ -204,6 +201,7 @@ int main(int argc, char **argv)
                 for (size_t x = 0; x < (size_t) img1_width; ++x) {
                     MAT_AT(NN_INPUT(nn), 0, 0) = (float)x/(img1_width - 1);
                     MAT_AT(NN_INPUT(nn), 0, 1) = (float)y/(img1_height - 1);
+                    MAT_AT(NN_INPUT(nn), 0, 2) = 0.0f;
                     nn_forward(nn);
                     uint8_t pixel = MAT_AT(NN_OUTPUT(nn), 0, 0)*255.f;
                     ImageDrawPixel(&preview_image, x, y, CLITERAL(Color) { pixel, pixel, pixel, 255 });
