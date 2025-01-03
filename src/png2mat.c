@@ -65,12 +65,11 @@ int main(int argc, char **argv)
     printf("%s size %dx%d %d bits\n", img1_file_path, img1_width, img1_height, img1_comp*8);
     printf("%s size %dx%d %d bits\n", img2_file_path, img2_width, img2_height, img2_comp*8);
 
-    return 0;
     //always: rows = amount of data, columns = input + output
     //in this case input: 3 since values for x, y, brightness
-    Mat t = mat_alloc(img1_width*img1_height, 3);
+    Mat t = mat_alloc(img1_width*img1_height + img2_width*img2_height, 4);
 
-    //iterate through each pixel from img
+    //iterate through each pixel from img1
     for (int y = 0; y < img1_height; ++y) {
         for (int x = 0; x < img1_width; ++x) {
             size_t i = y*img1_width + x;
@@ -79,10 +78,27 @@ int main(int argc, char **argv)
             MAT_AT(t, i, 0) = (float)x/(img1_width - 1);
             //same for y
             MAT_AT(t, i, 1) = (float)y/(img1_height - 1);
+            //index for current image
+            MAT_AT(t, i, 2) = 0.0f;
             //normalize brightness by dividing each pixel value by 255
-            MAT_AT(t, i, 2) = img1_pixels[i]/255.f;
+            MAT_AT(t, i, 3) = img1_pixels[i]/255.f;
         }
     }
+
+    //image 2
+    for (int y = 0; y < img2_height; ++y) {
+      for (int x = 0; x < img2_width; ++x) {
+        //off-set index by img1
+        size_t i = img1_width*img1_height + y*img2_width + x;
+        MAT_AT(t, i, 0) = (float)x/(img2_width - 1);
+        MAT_AT(t, i, 1) = (float)y/(img2_height - 1);
+        MAT_AT(t, i, 2) = 1.0f;
+        MAT_AT(t, i, 3) = img1_pixels[i]/255.f;
+      }
+    }
+
+    MAT_PRINT(t);
+    return 0;
 
     size_t arch[] = {2, 10, 10, 1};
     NN nn = nn_alloc(arch, ARRAY_LEN(arch));
